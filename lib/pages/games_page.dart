@@ -25,7 +25,7 @@ class GamesPage extends StatelessWidget {
               const SizedBox(height: 59),
               InkWell(
                 onTap: () {
-                  Navigator.of(context).pushNamed(AppRoutes.welcome);
+                  Navigator.of(context).pushNamed(AppRoutes.players);
                 },
                 child: Container(
                   width: 120,
@@ -49,59 +49,76 @@ class GamesPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 140,
-                    height: 140,
-                    child: UnconstrainedBox(
-                      child: SizedBox(
-                        width: 78,
-                        height: 78,
-                        child: Image.asset('assets/pictures/glass-cheers.png'),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.challange);
+                    },
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      child: UnconstrainedBox(
+                        child: SizedBox(
+                          width: 78,
+                          height: 78,
+                          child: Image.asset(
+                            'assets/pictures/glass-cheers.png',
+                          ),
+                        ),
                       ),
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.challangeGame,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(30),
+                      decoration: BoxDecoration(
+                        color: AppColors.challangeGame,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                        ),
                       ),
                     ),
                   ),
-                  Container(
-                    width: 140,
-                    height: 140,
-                    child: UnconstrainedBox(
-                      child: SizedBox(
-                        width: 78,
-                        height: 78,
-                        child: Image.asset('assets/pictures/question.png'),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.players);
+                    },
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      child: UnconstrainedBox(
+                        child: SizedBox(
+                          width: 78,
+                          height: 78,
+                          child: Image.asset('assets/pictures/question.png'),
+                        ),
                       ),
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.questionGame,
-                      borderRadius: const BorderRadius.only(
-                        bottomRight: Radius.circular(30),
+                      decoration: BoxDecoration(
+                        color: AppColors.questionGame,
+                        borderRadius: const BorderRadius.only(
+                          bottomRight: Radius.circular(30),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-              Container(
-                width: 140,
-                height: 140,
-                child: UnconstrainedBox(
-                  child: SizedBox(
-                    width: 78, //
-                    height: 78,
-                    child: Image.asset(
-                      'assets/pictures/cards-blank.png',
-                      fit: BoxFit.contain,
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).pushNamed(AppRoutes.players);
+                },
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  child: UnconstrainedBox(
+                    child: SizedBox(
+                      width: 78, //
+                      height: 78,
+                      child: Image.asset(
+                        'assets/pictures/cards-blank.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.cardGame,
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(30),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardGame,
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(30),
+                    ),
                   ),
                 ),
               ),

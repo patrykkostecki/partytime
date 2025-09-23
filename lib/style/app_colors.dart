@@ -10,4 +10,6 @@ class AppColors {
   static const challangeGame = Color(0xffA21f1F);
   static const questionGame = Color(0xff520404);
   static const cardGame = Color.fromARGB(255, 168, 59, 59);
+  static const input = Color.fromARGB(76, 156, 152, 152);
+  static const ininput = Color.fromARGB(150, 156, 152, 152);
 }
