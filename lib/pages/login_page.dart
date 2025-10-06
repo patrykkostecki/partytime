@@ -8,7 +8,10 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Navbar(),
+      appBar: Navbar(
+        centerImagePath: 'assets/pictures/PartyTime.png',
+        Width: 51,
+      ),
       body: Center(
         child: Column(
           children: [

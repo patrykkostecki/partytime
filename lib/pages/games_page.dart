@@ -11,7 +11,11 @@ class GamesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Navbar(),
+      appBar: Navbar(
+        centerImagePath: 'assets/pictures/PartyTime.png',
+        Width: 51,
+        rightImagePath: 'assets/pictures/info.png',
+      ),
       body: DecoratedBox(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -25,7 +29,9 @@ class GamesPage extends StatelessWidget {
               const SizedBox(height: 59),
               InkWell(
                 onTap: () {
-                  Navigator.of(context).pushNamed(AppRoutes.players);
+                  Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.players, arguments: {'game': 'mix'});
                 },
                 child: Container(
                   width: 120,
@@ -51,7 +57,10 @@ class GamesPage extends StatelessWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.of(context).pushNamed(AppRoutes.challange);
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.players,
+                        arguments: {'game': 'challenge'},
+                      );
                     },
                     child: Container(
                       width: 140,
@@ -75,7 +84,10 @@ class GamesPage extends StatelessWidget {
                   ),
                   InkWell(
                     onTap: () {
-                      Navigator.of(context).pushNamed(AppRoutes.players);
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.players,
+                        arguments: {'game': 'questions'},
+                      );
                     },
                     child: Container(
                       width: 140,
@@ -99,7 +111,9 @@ class GamesPage extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.of(context).pushNamed(AppRoutes.players);
+                  Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.level, arguments: {'game': 'never'});
                 },
                 child: Container(
                   width: 140,

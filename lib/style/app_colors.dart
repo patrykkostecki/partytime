@@ -12,4 +12,7 @@ class AppColors {
   static const cardGame = Color.fromARGB(255, 168, 59, 59);
   static const input = Color.fromARGB(76, 156, 152, 152);
   static const ininput = Color.fromARGB(150, 156, 152, 152);
+  static const easybutton = Color.fromARGB(167, 255, 44, 209);
+  static const normalbutton = Color.fromARGB(142, 189, 2, 99);
+  static const hardbutton = Color.fromARGB(141, 189, 2, 5);
 }

@@ -1,117 +1,435 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:partytime/components/navbar.dart';
+import 'package:partytime/config/app_routes.dart';
 import 'package:partytime/style/app_colors.dart';
 
-class ChallangePage extends StatelessWidget {
+class ChallangePage extends StatefulWidget {
   const ChallangePage({super.key});
 
   @override
+  State<ChallangePage> createState() => _ChallangePageState();
+}
+
+class _ChallangePageState extends State<ChallangePage>
+    with SingleTickerProviderStateMixin {
+  // -- stan gry
+  List<String> _players = [];
+  Map<String, int> _scores = {};
+  List<String> _challenges = [];
+  int _currentPlayerIndex = 0;
+  String? _currentChallenge;
+
+  String _difficulty = 'easy';
+  bool _loaded = false;
+  bool _loading = true;
+
+  // -- animacje kart
+  late final AnimationController _swipeCtrl;
+  late final Animation<double> _dx; // przesunięcie w prawo
+  late final Animation<double> _rot; // lekkie obrócenie
+  late final Animation<double> _fade; // wygaszenie topowej karty
+  late final Animation<double> _backLiftScale; // „podniesienie” karty z tyłu
+  late final Animation<double> _backLiftDy;
+
+  bool _isAnimating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _swipeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 450),
+    );
+
+    final curve = CurvedAnimation(
+      parent: _swipeCtrl,
+      curve: Curves.easeInOutCubic,
+    );
+
+    _dx = Tween<double>(begin: 0, end: 520).animate(curve);
+    _rot = Tween<double>(begin: 0, end: 0.20).animate(
+      CurvedAnimation(
+        parent: _swipeCtrl,
+        curve: const Interval(0.0, 0.9, curve: Curves.easeOut),
+      ),
+    );
+    _fade = Tween<double>(begin: 1.0, end: 0.0).animate(curve);
+
+    // Tylnia karta delikatnie „rośnie” i podjeżdża w górę podczas odjazdu topowej
+    _backLiftScale = Tween<double>(begin: 0.96, end: 1.0).animate(curve);
+    _backLiftDy = Tween<double>(begin: 14, end: 0).animate(curve);
+  }
+
+  @override
+  void dispose() {
+    _swipeCtrl.dispose();
+    super.dispose();
+  }
+
+  void _showBar(
+    String text, {
+    IconData icon = Icons.info_outline,
+    Color? color,
+    Duration duration = const Duration(milliseconds: 900),
+  }) {
+    final bg = color ?? Colors.black87;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(text, style: const TextStyle(fontSize: 16))),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: bg,
+        elevation: 8,
+        duration: duration,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        showCloseIcon: true,
+      ),
+    );
+  }
+
+  void _endGame() {
+    _showBar(
+      'Koniec wyzwań!',
+      icon: Icons.celebration_outlined,
+      color: AppColors.challangeGame,
+      duration: const Duration(milliseconds: 1000),
+    );
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(
+        AppRoutes.score,
+        arguments: {
+          'players': _players,
+          'scores': _scores,
+          'game': 'challange',
+          'difficulty': _difficulty,
+        },
+      );
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_loaded) return;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+        {};
+    _players = (args['players'] as List<dynamic>? ?? [])
+        .map((e) => e.toString())
+        .toList();
+    _difficulty = (args['difficulty'] as String?) ?? 'easy';
+    for (final p in _players) {
+      _scores.putIfAbsent(p, () => 0);
+    }
+    _loadChallenges();
+    _loaded = true;
+  }
+
+  Future<void> _loadChallenges() async {
+    setState(() => _loading = true);
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('challenges')
+          .where('difficulty', isEqualTo: _difficulty)
+          .get();
+
+      final all = snapshot.docs
+          .map((d) => (d.data()['text'] as String?)?.trim())
+          .whereType<String>()
+          .where((t) => t.isNotEmpty)
+          .toList();
+
+      all.shuffle(Random());
+
+      if (all.isEmpty) {
+        setState(() {
+          _challenges = [];
+          _currentChallenge = null;
+          _loading = false;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) => _endGame());
+        return;
+      }
+
+      setState(() {
+        _challenges = all;
+        _currentChallenge = _challenges.removeLast();
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _challenges = [];
+        _currentChallenge = null;
+        _loading = false;
+      });
+      _showBar(
+        'Błąd ładowania wyzwań: $e',
+        icon: Icons.error_outline,
+        color: Colors.redAccent,
+      );
+    }
+  }
+
+  // Wywoływane przez przyciski – najpierw animacja, potem zmiana rundy
+  Future<void> _onAction({bool point = false, bool shot = false}) async {
+    if (_isAnimating || _currentChallenge == null) return;
+    setState(() => _isAnimating = true);
+
+    // odjedź kartą w prawo
+    await _swipeCtrl.forward();
+
+    // po animacji zaktualizuj stan gry
+    _nextTurn(point: point, shot: shot);
+
+    // zresetuj kontroler pod następną animację
+    _swipeCtrl.reset();
+    if (mounted) setState(() => _isAnimating = false);
+  }
+
+  void _nextTurn({bool point = false, bool shot = false}) {
+    if (_currentChallenge == null) {
+      _endGame();
+      return;
+    }
+
+    final currentPlayer = _players[_currentPlayerIndex];
+
+    if (point) {
+      _scores[currentPlayer] = (_scores[currentPlayer] ?? 0) + 1;
+      _showBar(
+        'Punkt dla $currentPlayer!',
+        icon: Icons.star_border_rounded,
+        color: AppColors.questionGame,
+      );
+    }
+    if (shot) {
+      _showBar(
+        '$currentPlayer – pijesz!',
+        icon: Icons.local_bar_outlined,
+        color: AppColors.challangeGame,
+      );
+    }
+
+    final String? nextChallenge = _challenges.isNotEmpty
+        ? _challenges.removeLast()
+        : null;
+
+    if (nextChallenge == null) {
+      setState(() {
+        _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.length;
+        _currentChallenge = null;
+      });
+      _endGame();
+      return;
+    }
+
+    setState(() {
+      _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.length;
+      _currentChallenge = nextChallenge;
+    });
+  }
+
+  String? get _nextPreview =>
+      _challenges.isNotEmpty ? _challenges.last : null; // podgląd drugiej karty
+
+  @override
   Widget build(BuildContext context) {
+    final currentPlayer = _players.isNotEmpty
+        ? _players[_currentPlayerIndex]
+        : '???';
+
     return Scaffold(
-      appBar: Navbar(),
+      appBar: Navbar(
+        centerImagePath: 'assets/pictures/glass-cheers.png',
+        centerImageColor: AppColors.challangeGame,
+        rightImagePath: 'assets/pictures/end.png',
+        rightTap: _endGame,
+      ),
       body: DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/backgrounds/background3.png'),
-            // colorFilter: ColorFilter.mode(
-            //   Colors.black.withOpacity(0.3),
-            //   BlendMode.dstATop,
-            // ),
+            image: const AssetImage('assets/backgrounds/background1.png'),
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.5),
+              BlendMode.dstATop,
+            ),
             fit: BoxFit.cover,
           ),
         ),
         child: Center(
-          child: Column(
-            children: [
-              SizedBox(height: 27),
-              Text(
-                "Wyzwanie \n dla Adam",
-                style: TextStyle(
-                  fontFamily: 'Jomhuria',
-                  fontSize: 96,
-                  color: Colors.white,
-                  height: 0.80,
-                ),
-              ),
-              SizedBox(height: 30),
-              Container(
-                width: 300,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: AppColors.basicButton,
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Center(
-                    child: Text(
-                      "Musi oblać Cię piwem osoba po prawej stronie",
-                      style: TextStyle(
-                        fontFamily: 'PlexSans',
-                        fontSize: 20,
+          child: _loading
+              ? const CircularProgressIndicator()
+              : Column(
+                  children: [
+                    const SizedBox(height: 27),
+                    Text(
+                      'Wyzwanie\ndla $currentPlayer',
+                      style: const TextStyle(
+                        fontFamily: 'Jomhuria',
+                        fontSize: 96,
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        height: 0.80,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  ),
-                ),
-              ),
-              Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(left: 70.0),
-                child: SizedBox(
-                  width: 270,
-                  height: 78,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Punkt',
-                      style: TextStyle(
-                        fontFamily: 'Jomhuria',
-                        fontSize: 64,
-                        color: Colors.white,
+                    const SizedBox(height: 18),
+
+                    // --- STOS KART ---
+                    SizedBox(
+                      width: 300,
+                      height: 220,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Dolna (druga) karta – delikatnie mniejsza i niżej
+                          if (_nextPreview != null)
+                            AnimatedBuilder(
+                              animation: _swipeCtrl,
+                              builder: (context, _) {
+                                return Transform.translate(
+                                  offset: Offset(0, _backLiftDy.value),
+                                  child: Transform.scale(
+                                    scale: _backLiftScale.value,
+                                    child: _ChallengeCard(
+                                      text: _nextPreview!,
+                                      dimmed: true,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                          // Topowa karta – ta, która odjeżdża w prawo
+                          AnimatedBuilder(
+                            animation: _swipeCtrl,
+                            builder: (context, _) {
+                              return Opacity(
+                                opacity: _fade.value,
+                                child: Transform.translate(
+                                  offset: Offset(_dx.value, 0),
+                                  child: Transform.rotate(
+                                    angle: _rot.value,
+                                    child: _ChallengeCard(
+                                      text: _currentChallenge ?? '',
+                                      dimmed: false,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.questionGame,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(30),
+
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 70.0),
+                      child: SizedBox(
+                        width: 270,
+                        height: 78,
+                        child: ElevatedButton(
+                          onPressed: () => _onAction(point: true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.questionGame,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(30),
+                              ),
+                            ),
+                          ),
+                          child: const Text(
+                            'Punkt',
+                            style: TextStyle(
+                              fontFamily: 'Jomhuria',
+                              fontSize: 64,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 70.0),
-                child: SizedBox(
-                  width: 270,
-                  height: 78,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Szot',
-                      style: TextStyle(
-                        fontFamily: 'Jomhuria',
-                        fontSize: 64,
-                        color: Colors.white,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.challangeGame,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(30),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 70.0),
+                      child: SizedBox(
+                        width: 270,
+                        height: 78,
+                        child: ElevatedButton(
+                          onPressed: () => _onAction(shot: true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.challangeGame,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(30),
+                              ),
+                            ),
+                          ),
+                          child: const Text(
+                            'Szot',
+                            style: TextStyle(
+                              fontFamily: 'Jomhuria',
+                              fontSize: 64,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    const Spacer(),
+                  ],
                 ),
-              ),
-              Spacer(),
-            ],
+        ),
+      ),
+    );
+  }
+}
+
+// Pojedyncza karta wyzwania – ze stylem i cieniami
+class _ChallengeCard extends StatelessWidget {
+  const _ChallengeCard({required this.text, this.dimmed = false});
+
+  final String text;
+  final bool dimmed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 300,
+      height: 200,
+      decoration: BoxDecoration(
+        color: AppColors.basicButton.withOpacity(dimmed ? 0.75 : 1.0),
+        borderRadius: const BorderRadius.all(Radius.circular(30)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'PlexSans',
+              fontSize: 20,
+              color: Colors.white.withOpacity(dimmed ? 0.85 : 1.0),
+              fontWeight: FontWeight.bold,
+              height: 1.25,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       ),

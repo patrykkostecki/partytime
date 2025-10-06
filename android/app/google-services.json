@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "967677225795",
+    "project_id": "partytime-46c87",
+    "storage_bucket": "partytime-46c87.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:967677225795:android:ffd9afe7bd726c0bfc1df6",
+        "android_client_info": {
+          "package_name": "com.example.partytime"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhYMs7DnanJMrep3ssXNdx_70pj3bnytM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
