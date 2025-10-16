@@ -44,7 +44,7 @@ Future<bool> showEndGameConfirmDialog(
               ),
             ),
             onPressed: () {
-              Navigator.of(ctx).pop(true);
+              Navigator.of(ctx).pop(false);
             },
             child: Text(
               'Gram dalej',

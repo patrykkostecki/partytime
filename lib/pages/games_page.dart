@@ -1,6 +1,7 @@
 // ignore_for_file: sort_child_properties_last
 
 import 'package:flutter/material.dart';
+import 'package:partytime/components/info_pupup.dart';
 import 'package:partytime/components/navbar.dart';
 import 'package:partytime/config/app_routes.dart';
 import 'package:partytime/style/app_colors.dart';
@@ -15,6 +16,7 @@ class GamesPage extends StatelessWidget {
         centerImagePath: 'assets/pictures/PartyTime.png',
         Width: 51,
         rightImagePath: 'assets/pictures/info.png',
+        rightTap: () => showInfoPopup(context),
       ),
       body: DecoratedBox(
         decoration: const BoxDecoration(

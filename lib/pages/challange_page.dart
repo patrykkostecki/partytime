@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:partytime/components/end_popup.dart';
 import 'package:partytime/components/navbar.dart';
 import 'package:partytime/config/app_routes.dart';
 import 'package:partytime/style/app_colors.dart';
@@ -25,7 +26,6 @@ class _ChallangePageState extends State<ChallangePage>
   bool _loaded = false;
   bool _loading = true;
 
-  // -- animacje kart
   late final AnimationController _swipeCtrl;
   late final Animation<double> _dx; // przesunięcie w prawo
   late final Animation<double> _rot; // lekkie obrócenie
@@ -252,7 +252,10 @@ class _ChallangePageState extends State<ChallangePage>
         centerImagePath: 'assets/pictures/glass-cheers.png',
         centerImageColor: AppColors.challangeGame,
         rightImagePath: 'assets/pictures/end.png',
-        rightTap: _endGame,
+        rightTap: () async {
+          final ok = await showEndGameConfirmDialog(context);
+          if (ok) _endGame();
+        },
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(

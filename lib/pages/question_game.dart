@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:partytime/components/end_popup.dart';
 import 'package:partytime/components/navbar.dart';
 import 'package:partytime/config/app_routes.dart';
 import 'package:partytime/style/app_colors.dart';
@@ -240,7 +241,10 @@ class _QuestionGameState extends State<QuestionGame>
         centerImagePath: "assets/pictures/question.png",
         centerImageColor: AppColors.questionGame,
         rightImagePath: 'assets/pictures/end.png',
-        rightTap: _endGame,
+        rightTap: () async {
+          final ok = await showEndGameConfirmDialog(context);
+          if (ok) _endGame();
+        },
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(
