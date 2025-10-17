@@ -8,7 +8,6 @@ import 'package:partytime/style/app_colors.dart';
 
 class MixPage extends StatefulWidget {
   const MixPage({super.key});
-
   @override
   State<MixPage> createState() => _MixGamePageState();
 }
@@ -18,9 +17,12 @@ class _MixGamePageState extends State<MixPage>
   List<String> _players = [];
   Map<String, int> _scores = {};
   List<String> _mix = [];
+  List<String> _availableQuestions = [];
+  List<String> _availableChallenges = [];
   int _currentPlayerIndex = 0;
   String? _currentItem;
   String _difficulty = 'easy';
+  String _mode = 'random';
   bool _loaded = false;
   bool _loading = true;
   late final AnimationController _swipeCtrl;
@@ -119,11 +121,70 @@ class _MixGamePageState extends State<MixPage>
         .map((e) => e.toString())
         .toList();
     _difficulty = (args['difficulty'] as String?) ?? 'easy';
+    _mode = (args['mode'] as String?) ?? 'random';
     for (final p in _players) {
       _scores.putIfAbsent(p, () => 0);
     }
     _loadMix();
     _loaded = true;
+  }
+
+  Future<String?> _askChoice() async {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.black87,
+        title: const Text(
+          'Co wybierasz?',
+          style: TextStyle(
+            fontFamily: 'Jomhuria',
+            fontSize: 42,
+            color: Colors.white,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.questionGame,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              onPressed: () => Navigator.pop(ctx, 'question'),
+              child: const Text(
+                'Pytanie',
+                style: TextStyle(
+                  fontFamily: 'Jomhuria',
+                  fontSize: 35,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.challangeGame,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              onPressed: () => Navigator.pop(ctx, 'challenge'),
+              child: const Text(
+                'Wyzwanie',
+                style: TextStyle(
+                  fontFamily: 'Jomhuria',
+                  fontSize: 35,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _loadMix() async {
@@ -137,38 +198,45 @@ class _MixGamePageState extends State<MixPage>
           .collection('challenges')
           .where('difficulty', isEqualTo: _difficulty)
           .get();
-
-      final questions = questionsSnapshot.docs
+      _availableQuestions = questionsSnapshot.docs
           .map((d) => (d.data()['text'] as String?)?.trim())
           .whereType<String>()
           .toList();
-      final challenges = challengesSnapshot.docs
+      _availableChallenges = challengesSnapshot.docs
           .map((d) => (d.data()['text'] as String?)?.trim())
           .whereType<String>()
           .toList();
 
       final combined = [
-        ...questions.map((q) => 'P: $q'),
-        ...challenges.map((c) => 'W: $c'),
+        ..._availableQuestions.map((q) => 'P: $q'),
+        ..._availableChallenges.map((c) => 'W: $c'),
       ];
 
-      combined.shuffle(Random());
-
-      if (combined.isEmpty) {
+      if (_mode == 'random') {
+        combined.shuffle(Random());
+        setState(() {
+          _mix = combined;
+          _currentItem = _mix.removeLast();
+          _loading = false;
+        });
+      } else if (_mode == 'choice') {
+        setState(() {
+          _mix = [];
+          _currentItem = null;
+          _loading = false;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final choice = await _askChoice();
+          if (choice != null) _loadFirstChoice(choice);
+        });
+      } else {
         setState(() {
           _mix = [];
           _currentItem = null;
           _loading = false;
         });
         WidgetsBinding.instance.addPostFrameCallback((_) => _endGame());
-        return;
       }
-
-      setState(() {
-        _mix = combined;
-        _currentItem = _mix.removeLast();
-        _loading = false;
-      });
     } catch (e) {
       setState(() {
         _mix = [];
@@ -183,21 +251,42 @@ class _MixGamePageState extends State<MixPage>
     }
   }
 
+  Future<void> _loadFirstChoice(String choice) async {
+    String? randomItem;
+    if (choice == 'question' && _availableQuestions.isNotEmpty) {
+      _availableQuestions.shuffle();
+      randomItem = _availableQuestions.removeLast();
+    } else if (choice == 'challenge' && _availableChallenges.isNotEmpty) {
+      _availableChallenges.shuffle();
+      randomItem = _availableChallenges.removeLast();
+    }
+
+    if (randomItem != null) {
+      setState(() {
+        _currentItem = (choice == 'question' ? 'P: ' : 'W: ') + randomItem!;
+      });
+    } else {
+      _endGame();
+    }
+  }
+
   Future<void> _onAction({bool point = false, bool shot = false}) async {
     if (_isAnimating || _currentItem == null) return;
     setState(() => _isAnimating = true);
     await _swipeCtrl.forward();
-    _nextTurn(point: point, shot: shot);
+    await _nextTurn(point: point, shot: shot);
     _swipeCtrl.reset();
     if (mounted) setState(() => _isAnimating = false);
   }
 
-  void _nextTurn({bool point = false, bool shot = false}) {
+  Future<void> _nextTurn({bool point = false, bool shot = false}) async {
     if (_currentItem == null) {
       _endGame();
       return;
     }
-    final currentPlayer = _players[_currentPlayerIndex];
+    final currentPlayer = _players.isNotEmpty
+        ? _players[_currentPlayerIndex]
+        : 'Brak gracza';
     if (point) {
       _scores[currentPlayer] = (_scores[currentPlayer] ?? 0) + 1;
       _showBar(
@@ -213,15 +302,28 @@ class _MixGamePageState extends State<MixPage>
         color: AppColors.challangeGame,
       );
     }
-    final String? next = _mix.isNotEmpty ? _mix.removeLast() : null;
+
+    String? next;
+    if (_mode == 'choice') {
+      final choice = await _askChoice();
+      if (choice == 'question' && _availableQuestions.isNotEmpty) {
+        _availableQuestions.shuffle();
+        final item = _availableQuestions.removeLast();
+        next = 'P: $item';
+      } else if (choice == 'challenge' && _availableChallenges.isNotEmpty) {
+        _availableChallenges.shuffle();
+        final item = _availableChallenges.removeLast();
+        next = 'W: $item';
+      }
+    } else {
+      next = _mix.isNotEmpty ? _mix.removeLast() : null;
+    }
+
     if (next == null) {
-      setState(() {
-        _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.length;
-        _currentItem = null;
-      });
       _endGame();
       return;
     }
+
     setState(() {
       _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.length;
       _currentItem = next;
@@ -234,10 +336,9 @@ class _MixGamePageState extends State<MixPage>
   Widget build(BuildContext context) {
     final currentPlayer = _players.isNotEmpty
         ? _players[_currentPlayerIndex]
-        : '???';
+        : 'Brak gracza';
     final isQuestion = _currentItem?.startsWith('P: ') ?? false;
     final currentText = _currentItem?.substring(3) ?? '';
-
     return Scaffold(
       appBar: Navbar(
         centerImagePath: isQuestion
@@ -257,11 +358,11 @@ class _MixGamePageState extends State<MixPage>
           image: DecorationImage(
             image: AssetImage(
               isQuestion
-                  ? 'assets/backgrounds/background2.png'
-                  : 'assets/backgrounds/background1.png',
+                  ? 'assets/backgrounds/b1.png'
+                  : 'assets/backgrounds/b1.png',
             ),
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.3),
+              Colors.black.withOpacity(0.6),
               BlendMode.dstATop,
             ),
             fit: BoxFit.cover,
@@ -273,17 +374,24 @@ class _MixGamePageState extends State<MixPage>
               : Column(
                   children: [
                     const SizedBox(height: 27),
-                    Text(
-                      isQuestion
-                          ? "Pytanie\ndla $currentPlayer"
-                          : "Wyzwanie\ndla $currentPlayer",
-                      style: const TextStyle(
-                        fontFamily: 'Jomhuria',
-                        fontSize: 96,
-                        color: Colors.white,
-                        height: 0.80,
-                      ),
+                    RichText(
                       textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontFamily: 'Jomhuria',
+                          fontSize: 96,
+                          height: 0.8,
+                          color: Colors.white,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: isQuestion
+                                ? 'Pytanie\ndla '
+                                : 'Wyzwanie\ndla ',
+                          ),
+                          TextSpan(text: currentPlayer),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 18),
                     SizedBox(

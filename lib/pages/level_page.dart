@@ -9,7 +9,7 @@ class LevelPage extends StatelessWidget {
   String _getGameRoute(String game) {
     switch (game) {
       case 'mix':
-        return AppRoutes.mix;
+        return AppRoutes.modeMix;
       case 'challenge':
         return AppRoutes.challange;
       case 'questions':
@@ -44,78 +44,86 @@ class LevelPage extends StatelessWidget {
         centerImagePath: 'assets/pictures/PartyTime.png',
         Width: 51,
       ),
-      body: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: 27),
-            const Text(
-              "Wybierz poziom\n      trudności",
-              style: TextStyle(
-                fontFamily: 'Jomhuria',
-                fontSize: 80,
-                color: Colors.white,
-                height: 0.8,
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/backgrounds/background.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              const SizedBox(height: 27),
+              const Text(
+                "Wybierz poziom\n      trudności",
+                style: TextStyle(
+                  fontFamily: 'Jomhuria',
+                  fontSize: 80,
+                  color: Colors.white,
+                  height: 0.8,
+                ),
               ),
-            ),
-            const Spacer(),
-            SizedBox(
-              width: 325,
-              height: 116,
-              child: ElevatedButton(
-                onPressed: () => _goToGame('easy'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.easybutton,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
+              const Spacer(),
+              SizedBox(
+                width: 325,
+                height: 116,
+                child: ElevatedButton(
+                  onPressed: () => _goToGame('easy'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.easybutton,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                    ),
+                  ),
+                  child: const Text(
+                    'Dla leszczy',
+                    style: TextStyle(fontSize: 64, fontFamily: "Jomhuria"),
                   ),
                 ),
-                child: const Text(
-                  'Dla leszczy',
-                  style: TextStyle(fontSize: 64, fontFamily: "Jomhuria"),
-                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 325,
-              height: 116,
-              child: ElevatedButton(
-                onPressed: () => _goToGame('normal'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.normalbutton,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 325,
+                height: 116,
+                child: ElevatedButton(
+                  onPressed: () => _goToGame('normal'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.normalbutton,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                    ),
+                  ),
+                  child: const Text(
+                    'Normalny',
+                    style: TextStyle(fontSize: 64, fontFamily: "Jomhuria"),
                   ),
                 ),
-                child: const Text(
-                  'Normalny',
-                  style: TextStyle(fontSize: 64, fontFamily: "Jomhuria"),
-                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 325,
-              height: 116,
-              child: ElevatedButton(
-                onPressed: () => _goToGame('hard'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.hardbutton,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 325,
+                height: 116,
+                child: ElevatedButton(
+                  onPressed: () => _goToGame('hard'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.hardbutton,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                    ),
+                  ),
+                  child: const Text(
+                    'Trudny',
+                    style: TextStyle(fontSize: 64, fontFamily: "Jomhuria"),
                   ),
                 ),
-                child: const Text(
-                  'Trudny',
-                  style: TextStyle(fontSize: 64, fontFamily: "Jomhuria"),
-                ),
               ),
-            ),
-            const Spacer(),
-          ],
+              const Spacer(),
+            ],
+          ),
         ),
       ),
     );

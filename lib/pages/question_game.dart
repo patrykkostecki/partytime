@@ -249,7 +249,7 @@ class _QuestionGameState extends State<QuestionGame>
       body: DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: const AssetImage('assets/backgrounds/background2.png'),
+            image: const AssetImage('assets/backgrounds/b1.png'),
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.3),
               BlendMode.dstATop,

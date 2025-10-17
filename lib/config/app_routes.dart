@@ -2,6 +2,7 @@ import 'package:partytime/pages/challange_page.dart';
 import 'package:partytime/pages/games_page.dart';
 import 'package:partytime/pages/level_page.dart';
 import 'package:partytime/pages/login_page.dart';
+import 'package:partytime/pages/mix_mode_page.dart';
 import 'package:partytime/pages/mix_page.dart';
 import 'package:partytime/pages/never_game.dart';
 import 'package:partytime/pages/players_page.dart';
@@ -27,6 +28,7 @@ class AppRoutes {
     score: (context) => ScorePage(),
     mix: (context) => MixPage(),
     scoreNever: (context) => ScorePageNever(),
+    modeMix: (context) => MixModePage(),
   };
 
   static const welcome = "/";
@@ -42,4 +44,5 @@ class AppRoutes {
   static const score = "/score";
   static const mix = "/mix";
   static const scoreNever = "/scoreNever";
+  static const modeMix = "/mode";
 }

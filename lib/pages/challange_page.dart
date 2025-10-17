@@ -260,7 +260,7 @@ class _ChallangePageState extends State<ChallangePage>
       body: DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: const AssetImage('assets/backgrounds/background1.png'),
+            image: const AssetImage('assets/backgrounds/b1.png'),
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.5),
               BlendMode.dstATop,

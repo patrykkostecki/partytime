@@ -57,7 +57,28 @@ class _PlayersPageState extends State<PlayersPage> {
   void _onStart() {
     if (_playerCount == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Najpierw podaj liczbę graczy.')),
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  "Podaj ilość graczy",
+                  style: const TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.basicButton,
+          elevation: 8,
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
       );
       return;
     }
@@ -83,212 +104,225 @@ class _PlayersPageState extends State<PlayersPage> {
           centerImagePath: 'assets/pictures/PartyTime.png',
           Width: 51,
         ),
-        body: Center(
-          child: Column(
-            children: [
-              const SizedBox(height: 27),
-              const Text(
-                'Podaj ilość\n    graczy',
-                style: TextStyle(
-                  fontSize: 96,
-                  fontFamily: 'Jomhuria',
-                  color: Colors.white,
-                  height: 0.67,
-                ),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                width: 156,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: AppColors.input,
-                  borderRadius: const BorderRadius.all(Radius.circular(30)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(width: 13),
-                    UnconstrainedBox(
-                      child: SizedBox(
-                        height: 37,
-                        width: 37,
-                        child: Image.asset('assets/pictures/people-group.png'),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    SizedBox(
-                      width: 70,
-                      height: 40,
-                      child: TextField(
-                        controller: _countCtrl,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        onChanged: (v) {
-                          final n = int.tryParse(v) ?? 0;
-                          _setPlayerCount(n);
-                        },
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide(color: AppColors.ininput),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide(color: AppColors.ininput),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide(color: AppColors.ininput),
-                          ),
-                          hintText: "0",
-                          hintStyle: const TextStyle(color: Colors.white54),
-                          filled: true,
-                          fillColor: const Color.fromARGB(99, 156, 152, 152),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                          ),
-                        ),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+        body: DecoratedBox(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/backgrounds/background.png"),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              children: [
+                const SizedBox(height: 27),
+                const Text(
+                  'Podaj ilość\n    graczy',
+                  style: TextStyle(
+                    fontSize: 96,
+                    fontFamily: 'Jomhuria',
+                    color: Colors.white,
+                    height: 0.67,
                   ),
-                  itemCount: _playerCount,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, i) {
-                    return Row(
-                      children: [
-                        Container(
-                          width: 280,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            color: AppColors.input,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(30),
+                ),
+                const SizedBox(height: 30),
+                Container(
+                  width: 156,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    color: AppColors.input,
+                    borderRadius: const BorderRadius.all(Radius.circular(30)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(width: 13),
+                      UnconstrainedBox(
+                        child: SizedBox(
+                          height: 37,
+                          width: 37,
+                          child: Image.asset(
+                            'assets/pictures/people-group.png',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      SizedBox(
+                        width: 70,
+                        height: 40,
+                        child: TextField(
+                          controller: _countCtrl,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          onChanged: (v) {
+                            final n = int.tryParse(v) ?? 0;
+                            _setPlayerCount(n);
+                          },
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: BorderSide(color: AppColors.ininput),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: BorderSide(color: AppColors.ininput),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: BorderSide(color: AppColors.ininput),
+                            ),
+                            hintText: "0",
+                            hintStyle: const TextStyle(color: Colors.white54),
+                            filled: true,
+                            fillColor: const Color.fromARGB(99, 156, 152, 152),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(width: 13),
-                              UnconstrainedBox(
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.separated(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    itemCount: _playerCount,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, i) {
+                      return Row(
+                        children: [
+                          Container(
+                            width: 280,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              color: AppColors.input,
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(30),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(width: 13),
+                                UnconstrainedBox(
+                                  child: SizedBox(
+                                    height: 37,
+                                    width: 37,
+                                    child: Image.asset(
+                                      'assets/pictures/user.png',
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 20),
+                                SizedBox(
+                                  width: 190,
+                                  height: 40,
+                                  child: TextField(
+                                    controller: _nameCtrls[i],
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                        borderSide: BorderSide(
+                                          color: AppColors.ininput,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                        borderSide: BorderSide(
+                                          color: AppColors.ininput,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                        borderSide: BorderSide(
+                                          color: AppColors.ininput,
+                                        ),
+                                      ),
+                                      hintText: 'Gracz ${i + 1}',
+                                      hintStyle: const TextStyle(
+                                        color: Colors.white54,
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color.fromARGB(
+                                        99,
+                                        156,
+                                        152,
+                                        152,
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                    ),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          SizedBox(
+                            width: 58,
+                            height: 58,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _nameCtrls.removeAt(i).dispose();
+                                  _playerCount -= 1;
+                                  _countCtrl.text = '$_playerCount';
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.input,
+                              ),
+                              child: UnconstrainedBox(
                                 child: SizedBox(
-                                  height: 37,
-                                  width: 37,
+                                  width: 10,
+                                  height: 10,
                                   child: Image.asset(
-                                    'assets/pictures/user.png',
+                                    'assets/pictures/minus.png',
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 20),
-                              SizedBox(
-                                width: 190,
-                                height: 40,
-                                child: TextField(
-                                  controller: _nameCtrls[i],
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                        color: AppColors.ininput,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                        color: AppColors.ininput,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                        color: AppColors.ininput,
-                                      ),
-                                    ),
-                                    hintText: 'Gracz ${i + 1}',
-                                    hintStyle: const TextStyle(
-                                      color: Colors.white54,
-                                    ),
-                                    filled: true,
-                                    fillColor: const Color.fromARGB(
-                                      99,
-                                      156,
-                                      152,
-                                      152,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        SizedBox(
-                          width: 58,
-                          height: 58,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _nameCtrls.removeAt(i).dispose();
-                                _playerCount -= 1;
-                                _countCtrl.text = '$_playerCount';
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.input,
-                            ),
-                            child: UnconstrainedBox(
-                              child: SizedBox(
-                                width: 10,
-                                height: 10,
-                                child: Image.asset('assets/pictures/minus.png'),
-                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
+                        ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _onStart,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.firstButton,
-                  foregroundColor: Colors.white,
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _onStart,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.firstButton,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text(
+                    'Zaczynajmy!',
+                    style: TextStyle(fontSize: 48, fontFamily: "Jomhuria"),
+                  ),
                 ),
-                child: const Text(
-                  'Zaczynajmy!',
-                  style: TextStyle(fontSize: 48, fontFamily: "Jomhuria"),
-                ),
-              ),
-              const SizedBox(height: 100),
-            ],
+                const SizedBox(height: 100),
+              ],
+            ),
           ),
         ),
       ),

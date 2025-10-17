@@ -205,7 +205,7 @@ class _NeverGameState extends State<NeverGame>
       body: DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: const AssetImage('assets/backgrounds/background3.png'),
+            image: const AssetImage('assets/backgrounds/b2.png'),
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.5),
               BlendMode.dstATop,
